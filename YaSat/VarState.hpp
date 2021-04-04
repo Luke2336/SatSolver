@@ -21,7 +21,7 @@ public:
   Clause::Ptr getAntecedent() { return antecedent; }
   const std::vector<Clause::Ptr> &getWatch(bool b) const { return watch[b]; }
   std::vector<Clause::Ptr> &getWatch(bool b) { return watch[b]; }
-  void setStatus(Status s) { stauts = s; }
+  void setStatus(Status s) { status = s; }
   void setLevel(int l) { level = l; }
   void setMark(bool m) { mark = m; }
   void setAntecedent(Clause::Ptr a) { antecedent = a; }

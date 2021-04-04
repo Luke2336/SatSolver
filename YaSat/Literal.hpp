@@ -1,4 +1,5 @@
 #pragma once
+#include <ostream>
 class Literal {
 private:
   int v;
@@ -15,4 +16,7 @@ public:
   bool sign() const { return v & 1; }
   int var() const { return v >> 1; }
   operator int() const { return v; }
+  void to_ostream(std::ostream &out) const {
+    out << (sign() ? "-" : "") << var();
+  }
 };
