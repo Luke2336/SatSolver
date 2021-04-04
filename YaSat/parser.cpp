@@ -4,7 +4,7 @@
                            ================
 **********************************************************************/
 
-#include "parser.h"
+#include "Parser.h"
 #include <iostream>
 using std::ifstream;
 //#include <zlib.h>
