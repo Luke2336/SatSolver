@@ -1,8 +1,8 @@
 #pragma once
 #include "Clause.hpp"
-#include <cinttypes>
+#include "Util.hpp"
 #include <vector>
-enum Status : int8_t { False = 0, True = 1, Undef = 2 };
+
 class VarState {
 private:
   Status status;
