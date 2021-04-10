@@ -21,8 +21,6 @@ public:
         newC.emplace_back(std::abs(lit), lit < 0);
       Clauses.emplace_back(std::make_shared<Clause>(std::move(newC)));
     }
-    for (auto C : Clauses)
-      attachClause(C);
   }
   std::vector<Clause::Ptr> &getClauses() { return Clauses; }
   std::vector<VarState> &getVars() { return Vars; }

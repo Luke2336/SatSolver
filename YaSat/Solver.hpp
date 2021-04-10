@@ -23,6 +23,8 @@ private:
     }
     Literal FUIP;
     for (;;) {
+      if (Trail.empty())
+        return nullptr;
       auto &lit = Trail.back();
       auto &var = Vars[lit.var()];
       Trail.pop_back();
@@ -34,6 +36,8 @@ private:
         FUIP = lit;
         break;
       }
+      if (var.getAntecedent() == nullptr)
+        continue;
       for (auto &new_lit : *var.getAntecedent()) {
         auto &new_var = Vars[new_lit.var()];
         if (new_var.getMark() || new_var.getLevel() == 0)
@@ -78,11 +82,11 @@ private:
   bool unitPropagation(Literal literal) {
     bool Restart;
     Clause::Ptr antecedent = nullptr;
+    auto &Trail = Context.getTrail();
+    auto &Vars = Context.getVars();
     do {
       Restart = false;
       Context.setLiteralTrue(literal, antecedent);
-      auto &Trail = Context.getTrail();
-      auto &Vars = Context.getVars();
       for (auto TrailId = Trail.size() - 1; TrailId < Trail.size(); ++TrailId) {
         literal = Trail[TrailId];
         auto &Watch = Vars.at(literal.var()).getWatch((~literal).sign());
@@ -126,13 +130,30 @@ private:
   Literal selectLiteral() const {
     // TODO
     auto &Vars = Context.getVars();
-    for(size_t v = 0; v<Vars.size(); ++v){
-      if(Vars[v].getStatus() == Status::Undef){
-        if(rand()%2) return Literal(v, true);
-        else return Literal(v, false);
+    for (size_t v = 1; v < Vars.size(); ++v) {
+      if (Vars[v].getStatus() == Status::Undef) {
+        if (rand() % 2)
+          return Literal(v, true);
+        else
+          return Literal(v, false);
       }
     }
     return Literal(0, false);
+  }
+
+  bool simplifyClause(Clause::Ptr C) {
+    // for fix bug: (A) & (~A)
+    Clause Tmp = std::move(*C);
+    C->clear();
+    for (auto lit : Tmp) {
+      auto status = Context.checkLiteralStatus(lit);
+      if (status == Status::True)
+        return true;
+      if (status == Status::False)
+        continue;
+      C->emplace_back(lit);
+    }
+    return false;
   }
 
 public:
@@ -140,10 +161,15 @@ public:
   bool solve() {
     Context.setLevel(0);
     for (auto clause : Context.getClauses()) {
+      if (simplifyClause(clause))
+        continue;
+      if (clause->empty())
+        return false;
       if (clause->isUnit()) {
         if (!unitPropagation(clause->at(0)))
           return false;
-      }
+      } else
+        Context.attachClause(clause);
     }
     for (;;) {
       Literal literal = selectLiteral();
