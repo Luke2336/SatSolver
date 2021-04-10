@@ -23,8 +23,6 @@ private:
     }
     Literal FUIP;
     for (;;) {
-      if (Trail.empty())
-        return nullptr;
       auto &lit = Trail.back();
       auto &var = Vars[lit.var()];
       Trail.pop_back();
@@ -36,9 +34,11 @@ private:
         FUIP = lit;
         break;
       }
-      if (var.getAntecedent() == nullptr)
+      auto Antecedent = var.getAntecedent();
+      if (Antecedent == nullptr)
         continue;
-      for (auto &new_lit : *var.getAntecedent()) {
+      for (size_t i = 1; i < Antecedent->size(); ++i) {
+        auto new_lit = Antecedent->at(i);
         auto &new_var = Vars[new_lit.var()];
         if (new_var.getMark() || new_var.getLevel() == 0)
           continue;
@@ -51,6 +51,7 @@ private:
     }
     Clause::Ptr ret = std::make_shared<Clause>();
     ret->emplace_back(~FUIP);
+    int MaxLevel = 0;
     for (auto &lit : TmpClause) {
       bool Minimizable = false;
       if (Vars[lit.var()].getAntecedent() != nullptr) {
@@ -62,14 +63,13 @@ private:
           }
         }
       }
-      if (!Minimizable)
+      if (!Minimizable) {
+        MaxLevel = std::max(MaxLevel, Vars[lit.var()].getLevel());
         ret->emplace_back(lit);
+      }
     }
-    int MaxLevel = 0;
     for (auto &lit : TmpClause) {
-      auto &var = Vars[lit.var()];
-      var.setMark(false);
-      MaxLevel = std::max(MaxLevel, var.getLevel());
+      Vars[lit.var()].setMark(false);
     }
     while (Trail.size() && Vars[Trail.back().var()].getLevel() > MaxLevel) {
       Vars[Trail.back().var()].setStatus(Status::Undef);
@@ -121,6 +121,7 @@ private:
               return false;
             literal = antecedent->at(0);
             Restart = true;
+            break; // Hard to debug this break
           }
         }
       }
