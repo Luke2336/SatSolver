@@ -90,14 +90,14 @@ private:
       for (auto TrailId = Trail.size() - 1; TrailId < Trail.size(); ++TrailId) {
         literal = Trail[TrailId];
         auto &Watch = Vars.at(literal.var()).getWatch((~literal).sign());
-        for (int WatchId = 0; WatchId < Watch.size(); ++WatchId) {
+        for (size_t WatchId = 0; WatchId < Watch.size(); ++WatchId) {
           auto clause = Watch[WatchId];
           if (clause->at(0) != (~literal))
             std::swap(clause->at(0), clause->at(1));
           Status status = Context.checkLiteralStatus(clause->at(1));
           if (status == Status::True)
             continue;
-          int LitId;
+          size_t LitId;
           for (LitId = 2; LitId < clause->size(); ++LitId) {
             if (Context.checkLiteralStatus(clause->at(LitId)) != Status::False)
               break;
@@ -124,6 +124,8 @@ private:
             break; // Hard to debug this break
           }
         }
+        if (Restart)
+          break;
       }
     } while (Restart);
     return true;
