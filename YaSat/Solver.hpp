@@ -73,9 +73,12 @@ private:
     }
     while (Trail.size() && Vars[Trail.back().var()].getLevel() > MaxLevel) {
       Vars[Trail.back().var()].setStatus(Status::Undef);
+      Context.addHeap(Trail.back().var());
       Trail.pop_back();
     }
+    Context.initHeap();
     Context.setLevel(MaxLevel);
+    Context.increasePower();
     Context.attachClause(ret);
     return ret;
   }
@@ -105,7 +108,7 @@ private:
           if (LitId < clause->size()) {
             std::swap(clause->at(LitId), clause->at(0));
             // Remove from Watch List
-            std::swap(Watch[WatchId], Watch.back());
+            Watch[WatchId] = Watch.back();
             Watch.pop_back();
             WatchId--;
             // Add to Watch List
@@ -121,7 +124,7 @@ private:
               return false;
             literal = antecedent->at(0);
             Restart = true;
-            break; // Hard to debug this break
+            break;
           }
         }
         if (Restart)
@@ -130,22 +133,8 @@ private:
     } while (Restart);
     return true;
   }
-  Literal selectLiteral() const {
-    // TODO
-    auto &Vars = Context.getVars();
-    for (size_t v = 1; v < Vars.size(); ++v) {
-      if (Vars[v].getStatus() == Status::Undef) {
-        if (rand() % 2)
-          return Literal(v, true);
-        else
-          return Literal(v, false);
-      }
-    }
-    return Literal(0, false);
-  }
 
   bool simplifyClause(Clause::Ptr C) {
-    // for fix bug: (A) & (~A)
     Clause Tmp = std::move(*C);
     C->clear();
     for (auto lit : Tmp) {
@@ -163,6 +152,7 @@ public:
   Solver(SolverContext &Context) : Context(Context) {}
   bool solve() {
     Context.setLevel(0);
+    Context.initHeap();
     for (auto clause : Context.getClauses()) {
       if (simplifyClause(clause))
         continue;
@@ -175,7 +165,7 @@ public:
         Context.attachClause(clause);
     }
     for (;;) {
-      Literal literal = selectLiteral();
+      Literal literal = Context.selectLiteral();
       if (literal.isNull())
         break;
       Context.increaseLevel();
