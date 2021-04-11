@@ -4,6 +4,22 @@
 class Solver {
 private:
   SolverContext &Context;
+  int CntConflict;
+  const int RestartBase;
+  const double RestartInc;
+
+  static double luby(double y, int x) {
+    int size, seq;
+    for (size = 1, seq = 0; size < x + 1; ++seq, size = size * 2 + 1) {
+    }
+    while (size - 1 != x) {
+      size = (size - 1) >> 1;
+      --seq;
+      x %= size;
+    }
+    return pow(y, seq);
+  }
+
   Clause::Ptr backtrack(Clause::Ptr ConflictClause) {
     auto &Trail = Context.getTrail();
     if (Context.getLevel() == 0)
@@ -123,6 +139,8 @@ private:
             if (antecedent == nullptr)
               return false;
             literal = antecedent->at(0);
+            Context.getClauses().emplace_back(antecedent);
+            ++CntConflict;
             Restart = true;
             break;
           }
@@ -147,20 +165,17 @@ private:
     }
     return false;
   }
-
-public:
-  Solver(SolverContext &Context) : Context(Context) {}
-  bool solve() {
+  Status solve(int ConflictMax) {
     Context.setLevel(0);
     Context.initHeap();
     for (auto clause : Context.getClauses()) {
       if (simplifyClause(clause))
         continue;
       if (clause->empty())
-        return false;
+        return Status::False;
       if (clause->isUnit()) {
         if (!unitPropagation(clause->at(0)))
-          return false;
+          return Status::False;
       } else
         Context.attachClause(clause);
     }
@@ -170,8 +185,23 @@ public:
         break;
       Context.increaseLevel();
       if (!unitPropagation(literal))
-        return false;
+        return Status::False;
+      if (CntConflict > ConflictMax)
+        return Status::Undef;
     }
-    return true;
+    return Status::True;
+  }
+
+public:
+  Solver(SolverContext &Context)
+      : Context(Context), CntConflict(0), RestartBase(100), RestartInc(2) {}
+  bool solve() {
+    for (int CntRestart = 0;; ++CntRestart) {
+      Status status = solve(RestartBase * luby(RestartInc, CntRestart));
+      if (status != Status::Undef)
+        return status == Status::True;
+      Context.init();
+      CntConflict = 0;
+    }
   }
 };

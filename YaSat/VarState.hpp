@@ -17,6 +17,14 @@ public:
       : status(Status::Undef), level(0), mark(false), antecedent(nullptr) {
     score[0] = score[1] = 0;
   }
+  void init() {
+    status = Status::Undef;
+    level = 0;
+    mark = false;
+    watch[0].clear(), watch[1].clear();
+    antecedent = nullptr;
+    score[0] = score[1];
+  }
   Status getStatus() const { return status; }
   int getLevel() const { return level; }
   bool getMark() const { return mark; }

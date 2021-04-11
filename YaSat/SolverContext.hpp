@@ -40,6 +40,13 @@ public:
     for (auto c : Clauses)
       c->to_ostream(out);
   }
+  void init() {
+    for (auto &var : Vars)
+      var.init();
+    Trail.clear();
+    Level = 0;
+    ScorePower = 1;
+  }
   void increasePower() { ScorePower *= ScorePowerTimes; }
   void initHeap() {
     ScoreHeap.clear();
