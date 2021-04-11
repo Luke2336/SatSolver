@@ -2,7 +2,6 @@
 #include "Clause.hpp"
 #include "Util.hpp"
 #include <vector>
-
 class VarState {
 private:
   Status status;
@@ -23,7 +22,7 @@ public:
     mark = false;
     watch[0].clear(), watch[1].clear();
     antecedent = nullptr;
-    score[0] = score[1];
+    score[0] = score[1] = 0;
   }
   Status getStatus() const { return status; }
   int getLevel() const { return level; }

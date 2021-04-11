@@ -7,6 +7,7 @@ private:
   int CntConflict;
   const int RestartBase;
   const double RestartInc;
+  
   static double luby(double y, int x) {
     int size, seq;
     for (size = 1, seq = 0; size < x + 1; ++seq, size = size * 2 + 1) {
@@ -83,9 +84,8 @@ private:
         ret->emplace_back(lit);
       }
     }
-    for (auto &lit : TmpClause) {
+    for (auto &lit : TmpClause)
       Vars[lit.var()].setMark(false);
-    }
     while (Trail.size() && Vars[Trail.back().var()].getLevel() > MaxLevel) {
       Vars[Trail.back().var()].setStatus(Status::Undef);
       Context.addHeap(Trail.back().var());
@@ -97,6 +97,7 @@ private:
     Context.attachClause(ret);
     return ret;
   }
+
   bool unitPropagation(Literal literal) {
     bool Restart;
     Clause::Ptr antecedent = nullptr;
@@ -164,6 +165,7 @@ private:
     }
     return false;
   }
+
   Status solve(int ConflictMax) {
     Context.setLevel(0);
     Context.initHeap();

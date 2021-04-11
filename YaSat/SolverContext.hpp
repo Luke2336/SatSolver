@@ -84,6 +84,7 @@ public:
     }
     return Literal(0, false);
   }
+
   void attachClause(Clause::Ptr clause) {
     if (clause->size() < 2)
       return;
@@ -99,6 +100,7 @@ public:
       addHeap(lit.var());
     }
   }
+
   void setLiteralTrue(const Literal &literal, Clause::Ptr antecedent) {
     VarState &Var = Vars[literal.var()];
     removeHeap(literal.var());
@@ -107,12 +109,13 @@ public:
     Var.setAntecedent(antecedent);
     Trail.emplace_back(literal);
   }
-  Status checkLiteralStatus(const Literal &literal) const {
-    auto VarStatus = Vars[literal.var()].getStatus();
+  Status checkLiteralStatus(const Literal &lit) const {
+    auto VarStatus = Vars[lit.var()].getStatus();
     if (VarStatus == Status::Undef)
       return Status::Undef;
-    return literal.getStatus() == VarStatus ? Status::True : Status::False;
+    return lit.getStatus() == VarStatus ? Status::True : Status::False;
   }
+
   void to_ostream(std::ostream &out) {
     out << "s " << (SAT ? "SATISFIABLE" : "UNSATISFIABLE") << '\n';
     if (SAT) {
