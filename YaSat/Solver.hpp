@@ -7,7 +7,6 @@ private:
   int CntConflict;
   const int RestartBase;
   const double RestartInc;
-
   static double luby(double y, int x) {
     int size, seq;
     for (size = 1, seq = 0; size < x + 1; ++seq, size = size * 2 + 1) {
@@ -195,11 +194,13 @@ private:
 public:
   Solver(SolverContext &Context)
       : Context(Context), CntConflict(0), RestartBase(100), RestartInc(2) {}
-  bool solve() {
+  void solve() {
     for (int CntRestart = 0;; ++CntRestart) {
       Status status = solve(RestartBase * luby(RestartInc, CntRestart));
-      if (status != Status::Undef)
-        return status == Status::True;
+      if (status != Status::Undef) {
+        Context.setSAT(status == Status::True);
+        return;
+      }
       Context.init();
       CntConflict = 0;
     }

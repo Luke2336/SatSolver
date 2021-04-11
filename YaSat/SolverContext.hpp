@@ -8,6 +8,7 @@
 #include <utility>
 class SolverContext {
 private:
+  bool SAT;
   std::vector<Clause::Ptr> Clauses;
   std::vector<VarState> Vars;
   std::vector<Literal> Trail;
@@ -20,8 +21,8 @@ private:
 public:
   SolverContext(const std::vector<std::vector<int>> &clauses,
                 const int maxVarIndex)
-      : Clauses(), Vars(maxVarIndex + 1), Trail(), Level(0), ScorePower(1),
-        ScorePowerMax(1e20), ScorePowerTimes(1.001) {
+      : SAT(false), Clauses(), Vars(maxVarIndex + 1), Trail(), Level(0),
+        ScorePower(1), ScorePowerMax(1e20), ScorePowerTimes(1.001) {
     for (const auto &oldC : clauses) {
       Clause newC;
       for (int lit : oldC)
@@ -29,6 +30,8 @@ public:
       Clauses.emplace_back(std::make_shared<Clause>(std::move(newC)));
     }
   }
+  void setSAT(bool b) { SAT = b; }
+  bool getSAT() const { return SAT; }
   std::vector<Clause::Ptr> &getClauses() { return Clauses; }
   std::vector<VarState> &getVars() { return Vars; }
   std::vector<Literal> &getTrail() { return Trail; }
@@ -109,5 +112,16 @@ public:
     if (VarStatus == Status::Undef)
       return Status::Undef;
     return literal.getStatus() == VarStatus ? Status::True : Status::False;
+  }
+  void to_ostream(std::ostream &out) {
+    out << "s " << (SAT ? "SATISFIABLE" : "UNSATISFIABLE") << '\n';
+    if (SAT) {
+      out << "v ";
+      for (size_t i = 1; i < Vars.size(); ++i) {
+        Literal(i, Vars[i].getStatus() == Status::False).to_ostream(out);
+        out << ' ';
+      }
+      out << "0\n";
+    }
   }
 };
