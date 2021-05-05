@@ -2,7 +2,9 @@
 #include "Solver.hpp"
 #include "SolverContext.hpp"
 #include <cassert>
+#include <cstdlib>
 #include <cstring>
+#include <ctime>
 #include <iostream>
 char *outputfile(char *input) {
   int len = std::strlen(input);
@@ -18,6 +20,7 @@ int main(int argc, char *argv[]) {
   if (argc <= 1) {
     assert(false && "Argument error!!");
   }
+  srand(time(0));
   vector<vector<int>> clauses;
   int maxVarIndex;
   parse_DIMACS_CNF(clauses, maxVarIndex, argv[1]);

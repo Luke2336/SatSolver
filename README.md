@@ -44,6 +44,8 @@ s UNSATISFIABLE
 
 ## Implementation
 
+### Milestone 1
+
 1. Store clauses in **Sparse Metrix** using STL vector
 2. **Conflict-Driven Clause Learning (CDCL)**
 3. **Boolean Constraint Propagation (BCP)**
@@ -56,27 +58,33 @@ s UNSATISFIABLE
     - Data Structure: STL set
 6. **Luby Restart**
 
+### Milestone 2
+
+-   Restrict the length of clause learned in CDCL.
+    -   The max_length is changing randomly in range $[5, 15)$ when restarting.
+-   Fixed some efficiency bugs.
+
 ## Result
 
 | Benchmark | Time (s) |
 | --------- | ---- |
-| aim-100-1_6-no-1.cnf  | 0.012 |
-|aim-100-1_6-yes1-1.cnf   | 0.015 |
-|aim-200-1_6-no-1.cnf  | 0.012 |
-|aim-200-1_6-yes1-1.cnf  | 0.013 |
-|aim-50-1_6-no-1.cnf  | 0.009 |
-|aim-50-1_6-yes1-1.cnf  | 0.009 |
-|dubois100.cnf  | 0.023 |
-|dubois20.cnf  | 0.011 |
-|ii16a1.cnf  |  |
-|ii32a1.cnf  | 0.272 |
-|ii8a1.cnf  | 0.010 |
-|jnh1.cnf  | 0.015 |
-|jnh10.cnf  | 0.015 |
-|jnh11.cnf  | 0.016 |
-|par16-1-c.cnf  | 5.176 |
-|par16-1.cnf  | 0.033 |
-|par32-1-c.cnf  | |
-|par32-1.cnf  | 0.055 |
-|par8-1-c.cnf  | 0.010 |
-|par8-1.cnf  | 0.014 |
+| aim-100-1_6-no-1.cnf  | 0.003 |
+|aim-100-1_6-yes1-1.cnf   | 0.005 |
+|aim-200-1_6-no-1.cnf  | 0.005 |
+|aim-200-1_6-yes1-1.cnf  | 0.008 |
+|aim-50-1_6-no-1.cnf  | 0.003 |
+|aim-50-1_6-yes1-1.cnf  | 0.003 |
+|dubois100.cnf  | 0.022 |
+|dubois20.cnf  | 0.005 |
+|ii16a1.cnf  | 0.053 |
+|ii32a1.cnf  | 0.025 |
+|ii8a1.cnf  | 0.004 |
+|jnh1.cnf  | 0.009 |
+|jnh10.cnf  | 0.009 |
+|jnh11.cnf  | 0.012 |
+|par16-1-c.cnf  | 0.008 |
+|par16-1.cnf  | 0.014 |
+|par32-1-c.cnf  | 0.040 |
+|par32-1.cnf  | 0.049 |
+|par8-1-c.cnf  | 0.004 |
+|par8-1.cnf  | 0.008 |

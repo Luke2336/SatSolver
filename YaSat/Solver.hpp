@@ -1,13 +1,15 @@
 #pragma once
 #include "SolverContext.hpp"
 #include <algorithm>
+#include <cstdlib>
 class Solver {
 private:
   SolverContext &Context;
   int CntConflict;
   const int RestartBase;
   const double RestartInc;
-  
+  unsigned int maxClauseLen;
+
   static double luby(double y, int x) {
     int size, seq;
     for (size = 1, seq = 0; size < x + 1; ++seq, size = size * 2 + 1) {
@@ -88,13 +90,9 @@ private:
       Vars[lit.var()].setMark(false);
     while (Trail.size() && Vars[Trail.back().var()].getLevel() > MaxLevel) {
       Vars[Trail.back().var()].setStatus(Status::Undef);
-      Context.addHeap(Trail.back().var());
       Trail.pop_back();
     }
-    Context.initHeap();
     Context.setLevel(MaxLevel);
-    Context.increasePower();
-    Context.attachClause(ret);
     return ret;
   }
 
@@ -138,6 +136,11 @@ private:
             antecedent = backtrack(clause);
             if (antecedent == nullptr)
               return false;
+            if (antecedent->size() <= maxClauseLen) {
+              Context.initHeap();
+              Context.increasePower();
+              Context.attachClause(antecedent);
+            }
             literal = antecedent->at(0);
             Context.getClauses().emplace_back(antecedent);
             ++CntConflict;
@@ -195,9 +198,11 @@ private:
 
 public:
   Solver(SolverContext &Context)
-      : Context(Context), CntConflict(0), RestartBase(100), RestartInc(2) {}
+      : Context(Context), CntConflict(0), RestartBase(100), RestartInc(2),
+        maxClauseLen(10) {}
   void solve() {
     for (int CntRestart = 0;; ++CntRestart) {
+      maxClauseLen = rand() % 10 + 5;
       Status status = solve(RestartBase * luby(RestartInc, CntRestart));
       if (status != Status::Undef) {
         Context.setSAT(status == Status::True);
