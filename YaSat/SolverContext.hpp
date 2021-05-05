@@ -75,7 +75,12 @@ public:
   }
   void addHeap(size_t vid) { ScoreHeap.emplace(Vars[vid].getScoreSum(), vid); }
   Literal selectLiteral() {
-    while (ScoreHeap.size()) {
+    for (;;) {
+      if (ScoreHeap.empty()) {
+        initHeap();
+        if (ScoreHeap.empty())
+          break;
+      }
       size_t vid = ScoreHeap.rbegin()->second;
       auto &var = Vars[vid];
       if (var.getStatus() == Status::Undef)

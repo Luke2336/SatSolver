@@ -136,15 +136,15 @@ private:
             antecedent = backtrack(clause);
             if (antecedent == nullptr)
               return false;
+            literal = antecedent->at(0);
+            ++CntConflict;
+            Restart = true;
             if (antecedent->size() <= maxClauseLen) {
               Context.initHeap();
               Context.increasePower();
               Context.attachClause(antecedent);
+              Context.getClauses().emplace_back(antecedent);
             }
-            literal = antecedent->at(0);
-            Context.getClauses().emplace_back(antecedent);
-            ++CntConflict;
-            Restart = true;
             break;
           }
         }

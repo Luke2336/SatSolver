@@ -95,7 +95,7 @@ void parse_DIMACS_main(StreamBuffer &in, vector<vector<int>> &clauses) {
     skipWhitespace(in);
     if (*in == EOF)
       break;
-    else if (*in == 'c' || *in == 'p')
+    else if (*in == 'c' || *in == 'p' || *in == '%')
       skipLine(in);
     else
       readClause(in, clauses);
