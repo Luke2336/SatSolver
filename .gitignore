@@ -1,6 +1,7 @@
 .vscode
 *.o
 *.d
+*.sat
 yasat
 !yasat/
 .DS_store

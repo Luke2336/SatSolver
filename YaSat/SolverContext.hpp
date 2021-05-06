@@ -4,12 +4,15 @@
 #include "VarState.hpp"
 #include <cmath>
 #include <ostream>
+#include <random>
 #include <set>
 #include <utility>
+
 class SolverContext {
 private:
   bool SAT;
   std::vector<Clause::Ptr> Clauses;
+  std::vector<Clause> Origin_Clauses;
   std::vector<VarState> Vars;
   std::vector<Literal> Trail;
   int Level;
@@ -27,30 +30,40 @@ public:
       Clause newC;
       for (int lit : oldC)
         newC.emplace_back(std::abs(lit), lit < 0);
+      Origin_Clauses.emplace_back(newC);
       Clauses.emplace_back(std::make_shared<Clause>(std::move(newC)));
     }
+    unsigned seed = rand();
+    shuffle(Clauses.begin(), Clauses.end(), std::default_random_engine(seed));
   }
+
   void setSAT(bool b) { SAT = b; }
   bool getSAT() const { return SAT; }
+
   std::vector<Clause::Ptr> &getClauses() { return Clauses; }
   std::vector<VarState> &getVars() { return Vars; }
   std::vector<Literal> &getTrail() { return Trail; }
   int getLevel() const { return Level; }
   void setLevel(int l) { Level = l; }
   void increaseLevel() { ++Level; }
+
   void to_ostream(std::ostream &out) const {
     out << "p cnf " << Vars.size() - 1 << ' ' << Clauses.size() << '\n';
     for (auto c : Clauses)
       c->to_ostream(out);
   }
+
   void init() {
     for (auto &var : Vars)
       var.init();
     Trail.clear();
     Level = 0;
     ScorePower = 1;
+    ScoreHeap.clear();
   }
+
   void increasePower() { ScorePower *= ScorePowerTimes; }
+
   void initHeap() {
     ScoreHeap.clear();
     for (size_t i = 1; i < Vars.size(); ++i) {
@@ -59,6 +72,7 @@ public:
         ScoreHeap.emplace(var.getScoreSum(), i);
     }
   }
+
   void rebuildHeap() {
     if (ScorePower < ScorePowerMax)
       return;
@@ -69,11 +83,14 @@ public:
     }
     initHeap();
   }
+
   void removeHeap(size_t vid) {
     auto &var = Vars[vid];
     ScoreHeap.erase(std::make_pair(var.getScoreSum(), vid));
   }
+
   void addHeap(size_t vid) { ScoreHeap.emplace(Vars[vid].getScoreSum(), vid); }
+
   Literal selectLiteral() {
     for (;;) {
       if (ScoreHeap.empty()) {
@@ -114,6 +131,7 @@ public:
     Var.setAntecedent(antecedent);
     Trail.emplace_back(literal);
   }
+
   Status checkLiteralStatus(const Literal &lit) const {
     auto VarStatus = Vars[lit.var()].getStatus();
     if (VarStatus == Status::Undef)
@@ -122,6 +140,8 @@ public:
   }
 
   void to_ostream(std::ostream &out) {
+    if (SAT)
+      check();
     out << "s " << (SAT ? "SATISFIABLE" : "UNSATISFIABLE") << '\n';
     if (SAT) {
       out << "v ";
@@ -130,6 +150,24 @@ public:
         out << ' ';
       }
       out << "0\n";
+    }
+  }
+
+  void check() {
+    for (const auto &C : Origin_Clauses) {
+      bool AllFalse = true;
+      for (const auto &lit : C) {
+        if (Vars[lit.var()].getStatus() == Status::Undef)
+          continue;
+        if (lit.getStatus() == Vars[lit.var()].getStatus()) {
+          AllFalse = false;
+          break;
+        }
+      }
+      if (AllFalse) {
+        SAT = false;
+        return;
+      }
     }
   }
 };
